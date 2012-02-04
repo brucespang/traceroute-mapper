@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map { height: 100% }
+    </style>
+	</head>
+	<body>
+		<form name="map" action="#">
+			<textarea id="geos" name="geos" cols="50" rows="5">73.216.52.1,39.957199,-74.916199
+68.86.227.29,38.000000,-97.000000
+68.85.37.45,38.000000,-97.000000
+68.86.90.57,38.000000,-97.000000
+68.86.87.201,38.000000,-97.000000
+68.86.84.214,38.000000,-97.000000
+83.245.126.82,54.000000,-2.000000
+193.0.14.129,51.366699,6.083300</textarea>
+			<input type="submit" value="Plot"/>
+		</form>
+    <div id="map" style="width:100%; height:100%"></div>
+		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyC-_e9dgxqK9B-Uqkw4fWWCd9ET4WwD-44"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript">
+			var map = new google.maps.Map($("#map")[0], {
+				center: new google.maps.LatLng(0, 0),
+				zoom: 3,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			})
+			var coords = []
+			var path = null
+
+			function refresh(){
+				$.each(coords, function(i,c){
+					c.setMap(null)
+				})
+				if(path)
+					path.setMap(null)
+
+				coords = $.map($("#geos").val().split("\n"), function(pair,i){
+					var pair = pair.split(",")
+
+					if(pair.length == 1) {
+						return
+					} else if(pair.length == 2) {
+						var lat = pair[0]
+						var lng = pair[1]
+					} else {
+						var ip = pair[0]
+						var lat = pair[1]
+						var lng = pair[2]
+					}
+
+					return new google.maps.Marker({
+						position: new google.maps.LatLng(lat,lng),
+						map: map,
+						title: i + ": " + ip
+					})
+				})
+				
+				path = new google.maps.Polyline({
+					path: $.map(coords, function(coord){return coord.position}),
+					strokeColor: "#FF0000",
+					strokeOpacity: 1.0,
+					strokeWeight: 2
+				})
+				path.setMap(map)
+			}
+			refresh()
+
+			$("form").submit(function(){
+				refresh()
+				return false
+			})
+    </script>
+  </body>
+</html>
